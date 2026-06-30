@@ -36,7 +36,7 @@ class HEADataLoader(BaseDataLoader):
         random_state=42,
         shuffle=True,
         encoding = "latin1",
-        stratify = True,
+        stratify = False,
     ):
 
         super().__init__()
@@ -64,9 +64,9 @@ class HEADataLoader(BaseDataLoader):
         self._clean_column_names()
         self._remove_invalid_rows()
         self._clean_units()
-        self._normalize_labels()
+        # self._normalize_labels()
         self._remove_unwanted_columns()
-        self._fill_missing_values()
+        # self._fill_missing_values()
         self._create_descriptors()
         self._encode_categorical_columns()
         self._build_dataset()
@@ -119,9 +119,9 @@ class HEADataLoader(BaseDataLoader):
             self._data[self.target].astype(str).str.strip() != ""
         ]
 
-    def _normalize_labels(self):
-        """Normalize the target labels to a standard format."""
-        self._data[self.target] = self._data[self.target].str.strip().str.lower()
+    # def _normalize_labels(self):
+    #     """Normalize the target labels to a standard format."""
+    #     self._data[self.target] = self._data[self.target].str.strip().str.lower()
         
 
     def _clean_units(self):
@@ -156,23 +156,23 @@ class HEADataLoader(BaseDataLoader):
         self._data = self._data.drop(columns=columns_to_drop,errors="ignore",)
         # First line makes sure that target is not dropped even if it's in excluded_columns.
         
-    def _fill_missing_values(self):
-        """Fill missing values in the dataset."""
-        numeric_cols = self._data.select_dtypes(include=["number"]).columns
+    # def _fill_missing_values(self):
+    #     """Fill missing values in the dataset."""
+    #     numeric_cols = self._data.select_dtypes(include=["number"]).columns
 
-        self._data[numeric_cols] = self._data[numeric_cols].fillna(
-            self._data[numeric_cols].median()
-        )
+    #     self._data[numeric_cols] = self._data[numeric_cols].fillna(
+    #         self._data[numeric_cols].median()
+    #     )
 
-        categorical_cols = self._data.select_dtypes(
-            include=["object", "category"]
-        ).columns.tolist()
+    #     categorical_cols = self._data.select_dtypes(
+    #         include=["object", "category"]
+    #     ).columns.tolist()
 
-        categorical_cols = [col for col in categorical_cols if col != self.target]
+    #     categorical_cols = [col for col in categorical_cols if col != self.target]
 
-        self._data[categorical_cols] = self._data[categorical_cols].fillna(
-            "Unknown"
-        )
+    #     self._data[categorical_cols] = self._data[categorical_cols].fillna(
+    #         "Unknown"
+    #     )
 
     def _create_descriptors(self):
         """Use existing descriptor columns if present.
