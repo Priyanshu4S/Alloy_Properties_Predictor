@@ -3,12 +3,12 @@ Support Vector Regression predictor.
 
 Wraps sklearn.svm.SVR and follows the BasePredictor API.
 
-Use for regression targets such as:
+Use this for regression targets such as:
 - Hardness
 - Density_calc
 
 Do not use this for categorical targets such as Phases.
-For Phases, use SVC, not SVR.
+For Phases, use SVC instead of SVR.
 """
 
 from __future__ import annotations
@@ -21,6 +21,9 @@ import numpy as np
 
 from sklearn.svm import SVR
 from sklearn.metrics import r2_score
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 
 from alloy_prediction.models.base_model import BasePredictor
 
@@ -55,7 +58,13 @@ class SVMRegressionPredictor(BasePredictor):
             **all_hyperparameters,
         )
 
-        self.model = SVR(**self.hyperparameters)
+        self.model = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler()),
+                ("svr", SVR(**self.hyperparameters)),
+            ]
+        )
 
     def fit(
         self,
@@ -68,6 +77,16 @@ class SVMRegressionPredictor(BasePredictor):
 
         if hasattr(X, "columns"):
             self.feature_names = list(X.columns)
+
+        y = np.asarray(y)
+
+        try:
+            y = y.astype(float)
+        except ValueError as exc:
+            raise ValueError(
+                "SVR is a regression model, so y must be numeric. "
+                f"Current target '{self.target_property}' may be categorical."
+            ) from exc
 
         self.model.fit(X, y)
         self.is_fitted = True
@@ -98,6 +117,15 @@ class SVMRegressionPredictor(BasePredictor):
 
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before scoring.")
+
+        y = np.asarray(y)
+
+        try:
+            y = y.astype(float)
+        except ValueError as exc:
+            raise ValueError(
+                "SVR score calculation needs numeric y values."
+            ) from exc
 
         y_pred = self.predict(X)
 
