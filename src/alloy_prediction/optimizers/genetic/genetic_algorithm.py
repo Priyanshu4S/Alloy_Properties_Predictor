@@ -14,12 +14,15 @@ class GeneticAlgorithm(BaseOptimizer):
         self.optimization_stopping_function = optimization_stopping_function
 
    
-    def _evaluate_population(self, population):
+    def _evaluate_population(self, population : Population):
         for chromosome in population:
-            chromosome.update_fitness(self.predictor,self.objective,)
+            property_value = self.predictor(chromosome.composition)
+            chromosome.fitness = self.objective(property_value)
+            # return objective(property_value)
+            # chromosome.update_fitness(self.predictor,self.objective,)
    
     def _generate_next_population(self, population):
-        self._evaluate_population(population)
+        # self._evaluate_population(population)
 
         next_population = Population(chromosomes=[],generation=population.generation + 1,)
 
@@ -45,27 +48,35 @@ class GeneticAlgorithm(BaseOptimizer):
         return self.population
     
     def advance_n_generations(self, n):
+        self._evaluate_population(self.population)
         for _ in range(n):
             self.next_generation()
+            self._evaluate_population(self.population)
         return self.population
 
     def predict_nth_generation(self, n):
         output = copy.deepcopy(self.population)
+        self._evaluate_population(output)
         for _ in range(n):
             output = self._generate_next_population(output)
+            self._evaluate_population(output)
         return output
 
 
     def optimize(self):
         history = []
-
+        
+        self._evaluate_population(self.population)
         while True:
-            self._evaluate_population(self.population)
-            history.append({
+            # self._evaluate_population(self.population)
+            obj = {
                 "generation": self.population.generation,
                 "best": self.population.best_fitness,
                 "average": self.population.average_fitness,
-            })
+                "best_individual" : copy.deepcopy(self.population.best_individual())
+            }
+            # print(obj,"\n")
+            history.append(obj)
 
             previous_best = self.population.best_fitness
             self.next_generation()

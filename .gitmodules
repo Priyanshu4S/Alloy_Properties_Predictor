@@ -1,0 +1,3 @@
+[submodule "external/manim"]
+	path = external/manim
+	url = https://github.com/ShivangOS/manim.git

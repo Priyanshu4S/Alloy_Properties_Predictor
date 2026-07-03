@@ -18,5 +18,3 @@ class BaseOptimizer(ABC):
     @abstractmethod
     def optimize(self):
         pass
-
-   

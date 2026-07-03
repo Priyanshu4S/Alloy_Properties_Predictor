@@ -26,7 +26,7 @@ class Population:
     def add_individual(self, chromosome):
         self.chromosomes.append(chromosome)
 
-    def best_individual(self):
+    def best_individual(self) -> Chromosome:
         return max(
             self.chromosomes,
             key=lambda chromosome: chromosome.fitness,
